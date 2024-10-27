@@ -139,7 +139,7 @@ GameObject:
   - component: {fileID: 5055698509961064899}
   - component: {fileID: 5055698509961064900}
   m_Layer: 20
-  m_Name: PF Props Rune Pillar X2
+  m_Name: Obelisk
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
