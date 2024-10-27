@@ -19,7 +19,7 @@ public class MovementController : MonoBehaviour
     {
         inputVector = GetInput();
         //body.AddForce(inputVector * speed);
-        body.velocity = inputVector * speed;
+        body.linearVelocity = inputVector * speed;
     }
 
     Vector2 GetInput()
