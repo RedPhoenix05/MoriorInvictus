@@ -5,12 +5,8 @@ using UnityEngine;
 [RequireComponent(typeof(Rigidbody2D))]
 public class MovementController : MonoBehaviour
 {
-    [SerializeField] float speed = 150.0f;
-
-    [SerializeField] KeyCode upAction = KeyCode.W;
-    [SerializeField] KeyCode leftAction = KeyCode.A;
-    [SerializeField] KeyCode downAction = KeyCode.S;
-    [SerializeField] KeyCode rightAction = KeyCode.D;
+    [SerializeField] float speed = 5f;
+    [SerializeField] bool useRawInput = false;
     Rigidbody2D body;
     Vector2 inputVector = Vector2.zero;
 
@@ -22,17 +18,14 @@ public class MovementController : MonoBehaviour
     void FixedUpdate()
     {
         inputVector = GetInput();
-        body.AddForce(inputVector * speed);
+        //body.AddForce(inputVector * speed);
+        body.velocity = inputVector * speed;
     }
 
     Vector2 GetInput()
     {
-        Vector2 input = Vector2.zero;
-        if (Input.GetKey(upAction)) input += Vector2.up;
-        if (Input.GetKey(leftAction)) input += Vector2.left;
-        if (Input.GetKey(downAction)) input += Vector2.down;
-        if (Input.GetKey(rightAction)) input += Vector2.right;
-
-        return input.normalized;
+        float x = useRawInput ? Input.GetAxisRaw("Horizontal") : Input.GetAxis("Horizontal");
+        float y = useRawInput ? Input.GetAxisRaw("Vertical") : Input.GetAxis("Vertical");
+        return new Vector2(x, y).normalized;
     }
 }
