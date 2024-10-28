@@ -1,20 +1,25 @@
+using Pathfinding;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEditor.Animations;
 using UnityEngine;
+using UnityEngine.Rendering;
 
 [RequireComponent(typeof(Rigidbody2D))]
 public class MovementController : MonoBehaviour
 {
     [Header("Inputs")]
     [SerializeField] Animator animator;
+    [SerializeField] Animator shadowAnimator;
     [SerializeField] SpriteRenderer renderer;
+    [SerializeField] SpriteRenderer shadowRenderer;
     [SerializeField] Player player;
     [SerializeField] bool useRawInput = false;
-    Rigidbody2D body;
+    [HideInInspector] public Rigidbody2D body;
     Vector2 inputVector = Vector2.zero;
 
     [Header("Movement")]
+    //[HideInInspector] public bool canMove = true;
     [SerializeField] float moveSpeed = 5.0f;
     [SerializeField] float ghostSpeed = 2.5f;
     [SerializeField] float dashSpeed = 24.0f;
@@ -23,6 +28,8 @@ public class MovementController : MonoBehaviour
     [SerializeField] float attack1Delay = 0.462f;
     [SerializeField] float attack2Delay = 0.831f;
     [SerializeField] float attackCooldown = 1.0f;
+    [SerializeField] float attackRadius = 2.0f;
+    [SerializeField] LayerMask damageLayers;
     bool canDash = true;
     bool dashing = false;
     bool canAttack = true;
@@ -48,6 +55,7 @@ public class MovementController : MonoBehaviour
                     CancelInvoke(nameof(Attack));
 
                     animator.SetTrigger("Dash");
+                    shadowAnimator.SetTrigger("Dash");
                     canDash = false;
                     Invoke(nameof(EnableDash), dashCooldown);
                     dashing = true;
@@ -64,6 +72,7 @@ public class MovementController : MonoBehaviour
                 if (!dashing && canAttack)
                 {
                     animator.SetTrigger("Attack");
+                    shadowAnimator.SetTrigger("Attack");
                     canAttack = false;
                     attackMovement = true;
                     Invoke(nameof(Attack), attack1Delay);
@@ -79,15 +88,21 @@ public class MovementController : MonoBehaviour
 
     void FixedUpdate()
     {
-        float speed = dashing ? dashSpeed : moveSpeed;
-        if (attackMovement || !player.living) speed /= 2;
-        if (!(dashing || attackMovement)) inputVector = GetInput();
-        if (!attacking) body.linearVelocity = inputVector * speed;
+        if (body.simulated)
+        {
+            float speed = dashing ? dashSpeed : moveSpeed;
+            if (attackMovement || !player.living) speed /= 2;
+            if (!(dashing || attackMovement)) inputVector = GetInput();
+            if (!attacking) body.linearVelocity = inputVector * speed;
 
-        //animations
-        animator.SetFloat("xMotion", body.linearVelocity.magnitude);
-        if (body.linearVelocityX < 0.0f) renderer.flipX = true;
-        if (body.linearVelocityX > 0.0f) renderer.flipX = false;
+            //animations
+            animator.SetFloat("xMotion", body.linearVelocity.magnitude);
+            shadowAnimator.SetFloat("xMotion", body.linearVelocity.magnitude);
+            if (body.linearVelocityX < 0.0f) renderer.flipX = true;
+            if (body.linearVelocityX > 0.0f) renderer.flipX = false;
+            if (body.linearVelocityX < 0.0f) shadowRenderer.flipX = true;
+            if (body.linearVelocityX > 0.0f) shadowRenderer.flipX = false;
+        }
     }
 
     Vector2 GetInput()
@@ -111,9 +126,20 @@ public class MovementController : MonoBehaviour
     {
         canAttack = true;
     }
-    void Attack()
+
+    public void Attack()
     {
         attacking = true;
+
+        //get all enemy positions
+        EnemyController[] enemies = FindObjectsByType<EnemyController>(FindObjectsSortMode.None);
+        foreach (EnemyController enemy in enemies)
+        {
+            if (Vector3.Distance(enemy.transform.position, transform.position) < attackRadius)
+            {
+                enemy.Kill();
+            }
+        }
     }
 
     void StopAttack()
