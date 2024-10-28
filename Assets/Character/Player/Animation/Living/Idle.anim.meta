@@ -6,3 +6,10 @@ NativeFormatImporter:
   userData: 
   assetBundleName: 
   assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 195707
+  packageName: Warrior Free Asset
+  packageVersion: 
+  assetPath: Assets/Character/Player/Animation/Idle.anim
+  uploadId: 0

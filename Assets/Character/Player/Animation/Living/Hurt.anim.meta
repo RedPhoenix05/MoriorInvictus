@@ -6,3 +6,10 @@ NativeFormatImporter:
   userData: 
   assetBundleName: 
   assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 195707
+  packageName: Warrior Free Asset
+  packageVersion: 1.0
+  assetPath: Assets/Character/Player/Animation/Hurt.anim
+  uploadId: 434362
