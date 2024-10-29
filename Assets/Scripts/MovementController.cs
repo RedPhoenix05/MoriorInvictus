@@ -36,6 +36,14 @@ public class MovementController : MonoBehaviour
     bool attackMovement = false;
     bool attacking = false;
 
+    [Header("SFX")]
+    [SerializeField] AudioPlayer attackSwing;
+    [SerializeField] AudioPlayer attackHit;
+    [SerializeField] AudioPlayer dash;
+    [SerializeField] AudioPlayer step;
+    [SerializeField] float stepDelay = 0.25f;
+    float currentStep = 0;
+
     void Start()
     {
         body = GetComponent<Rigidbody2D>();
@@ -52,6 +60,8 @@ public class MovementController : MonoBehaviour
             {
                 if (!attackMovement && canDash)
                 {
+                    dash.Play();
+
                     CancelInvoke(nameof(Attack));
 
                     animator.SetTrigger("Dash");
@@ -102,6 +112,15 @@ public class MovementController : MonoBehaviour
             if (body.linearVelocityX > 0.0f) renderer.flipX = false;
             if (body.linearVelocityX < 0.0f) shadowRenderer.flipX = true;
             if (body.linearVelocityX > 0.0f) shadowRenderer.flipX = false;
+            if (player.living && body.linearVelocity.magnitude > 0.5f)
+            {
+                currentStep += Time.fixedDeltaTime;
+                if (currentStep >= stepDelay)
+                {
+                    step.Play();
+                    currentStep = 0.0f;
+                }
+            }
         }
     }
 
@@ -129,16 +148,24 @@ public class MovementController : MonoBehaviour
 
     public void Attack()
     {
+        attackSwing.Play();
         attacking = true;
+        bool hit = false;
 
         //get all enemy positions
         EnemyController[] enemies = FindObjectsByType<EnemyController>(FindObjectsSortMode.None);
         foreach (EnemyController enemy in enemies)
         {
-            if (Vector3.Distance(enemy.transform.position, transform.position) < attackRadius)
+            if (enemy.living && Vector3.Distance(enemy.transform.position, transform.position) < attackRadius)
             {
+                hit = true;
                 enemy.Kill();
             }
+        }
+
+        if (hit)
+        {
+            attackHit.Play();
         }
     }
 

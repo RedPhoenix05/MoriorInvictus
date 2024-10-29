@@ -6,11 +6,13 @@ public class Player : MonoBehaviour
 {
     MovementController controller;
 
-    public bool living = true;
+    public int souls = 1;
+
+    [HideInInspector] public bool living = true;
 
     public bool canResurrect = false;
     [SerializeField] string altarTag = "Resurrection Altar";
-    [SerializeField] float resurrectionDelay = 2.0f;
+    [SerializeField] float resurrectionDelay = 3.0f;
     [SerializeField] float transitionTime = 4.0f;
 
     [SerializeField] SpriteRenderer renderer;
@@ -26,26 +28,49 @@ public class Player : MonoBehaviour
     bool animatingGhost = false;
     float time = 0.0f;
 
+    [Header("Audio")]
+    [SerializeField] AudioSource livingAmbience;
+    [SerializeField] AudioSource deadAmbience;
+    [SerializeField] AudioPlayer deathSFX;
+    [SerializeField] AudioSource resurrectionSFX;
+
     void OnTriggerEnter2D(Collider2D collision)
     {
         if (collision.gameObject.tag == altarTag)
         {
-            if (canResurrect) Invoke(nameof(Resurrect), resurrectionDelay);
+            if (canResurrect)
+            {
+                Invoke(nameof(Resurrect), resurrectionDelay);
+                resurrectionSFX.Play();
+            }
         }
     }
 
     void OnTriggerExit2D(Collider2D collision)
     {
         CancelInvoke(nameof(Resurrect));
+        resurrectionSFX.Stop();
     }
 
     void Start()
     {
         controller = GetComponent<MovementController>();
+        livingAmbience.Play();
     }
 
     public void Resurrect()
     {
+        canResurrect = false;
+        souls--;
+        resurrectionSFX.Stop();
+
+        LivingObjects.SetActive(true);
+        GhostObjects.SetActive(false);
+
+        deadAmbience.Stop();
+        livingAmbience.Play();
+        resurrectionSFX.Play();
+
         animator.runtimeAnimatorController = livingAnimation;
         living = true;
 
@@ -63,8 +88,16 @@ public class Player : MonoBehaviour
 
     public void Kill()
     {
+        canResurrect = souls > 0;
+
+        LivingObjects.SetActive(false);
+        GhostObjects.SetActive(true);
+
+        livingAmbience.Stop();
+        deadAmbience.Play();
+        deathSFX.Play();
+
         living = false;
-        canResurrect = true;
         shadow.SetActive(false);
 
         controller.body.simulated = false;
@@ -88,6 +121,7 @@ public class Player : MonoBehaviour
     {
         GameObject obj = Instantiate(deadBody);
         obj.transform.position = transform.position;
+        if (renderer.flipX && obj.GetComponent<SpriteRenderer>()) obj.GetComponent<SpriteRenderer>().flipX = true;
 
         renderer.color = new Color(1, 1, 1, 0);
         animator.runtimeAnimatorController = ghostAnimation;
