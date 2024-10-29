@@ -1,6 +1,5 @@
 using UnityEngine;
 using Pathfinding;
-using NUnit.Framework;
 using System.Collections.Generic;
 
 [RequireComponent(typeof(Animator))]

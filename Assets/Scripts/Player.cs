@@ -1,5 +1,5 @@
 using Pathfinding;
-using UnityEditor.Animations;
+//using UnityEditor.Animations;
 using UnityEngine;
 
 public class Player : MonoBehaviour
@@ -17,8 +17,8 @@ public class Player : MonoBehaviour
 
     [SerializeField] SpriteRenderer renderer;
     [SerializeField] Animator animator;
-    [SerializeField] AnimatorController livingAnimation;
-    [SerializeField] AnimatorController ghostAnimation;
+    [SerializeField] RuntimeAnimatorController livingAnimation;
+    [SerializeField] RuntimeAnimatorController ghostAnimation;
     [SerializeField] GameObject LivingObjects;
     [SerializeField] GameObject GhostObjects;
 
